@@ -38,27 +38,19 @@ import com.github.diamond.client.util.NamedThreadFactory;
  * @author bsli@ustcinfo.com
  */
 public class PropertiesConfiguration extends EventSource {
-	
 	private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesConfiguration.class);
-
 	private StrSubstitutor substitutor;
-	
 	private Map<String, String> store = null;
-	
 	private Netty4Client client;
-	
 	private volatile boolean reloadable = true;
-	
 	private static final ExecutorService reloadExecutorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("ReloadConfigExecutorService", true));
-	
 	private static String _host;
 	private static int _port = 0;
 	private static String _projCode;
 	private static String _profile;
 	private static String _modules;
-	
 	private static final long FIRST_CONNECT_TIMEOUT = 2;
-	
+
 	/**
 	 * 从jvm参数中获取 projCode、profile、host和port值
 	 * 
@@ -127,11 +119,19 @@ public class PropertiesConfiguration extends EventSource {
 		_projCode = projCode;
 		_profile = profile;
 		_modules = modules;
-		
+		//连接服务器
 		connectServer(_host, _port, _projCode, _profile, _modules);
 		substitutor = new StrSubstitutor(createInterpolator());
 	}
-	
+
+	/**
+	 * 连接服务器，如果连接成功，则接受从服务拉去的配置，保存到本地文件。
+	 * @param host
+	 * @param port
+	 * @param projCode
+	 * @param profile
+	 * @param modules
+	 */
 	protected void connectServer(String host, int port, final String projCode, final String profile, final String modules) {
 		Assert.notNull(projCode, "连接superdiamond， projCode不能为空");
 		
@@ -146,13 +146,14 @@ public class PropertiesConfiguration extends EventSource {
 				if(StringUtils.isNotBlank(message)) {
 					String versionStr = message.substring(0, message.indexOf("\r\n"));
 					LOGGER.info("加载配置信息，项目编码：{}，Profile：{}, Version：{}", projCode, profile, versionStr.split(" = ")[1]);
-					
+					//保存文件
 					FileUtils.saveData(projCode, profile, message);
+					//加载配置
 					load(new StringReader(message), false);
 				} else {
 					throw new ConfigurationRuntimeException("从服务器端获取配置信息为空，Client 请求信息为：" + clientMsg);
 				}
-			} else {
+			} else {//没有连接成功，则从本地磁盘配置文件中读取配置
 				String message = FileUtils.readConfigFromLocal(projCode, profile);
 				if(message != null) {
 					String versionStr = message.substring(0, message.indexOf("\r\n"));
@@ -162,7 +163,7 @@ public class PropertiesConfiguration extends EventSource {
 				} else
 					throw new ConfigurationRuntimeException("本地没有备份配置数据，PropertiesConfiguration 初始化失败。");
 			}
-			
+			//如果需要重新加载配置文件，则读取客户端从服务器拉去配置
 			reloadExecutorService.submit(new Runnable() {
 				
 				@Override
@@ -222,6 +223,7 @@ public class PropertiesConfiguration extends EventSource {
 				String key = reader.getPropertyName();
 				String value = reader.getPropertyValue();
 				tmpStore.put(key, value);
+				//通知配置监听器
 				if(reload) {
 					String oldValue = store.remove(key);
 					if(oldValue == null)

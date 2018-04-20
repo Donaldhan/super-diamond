@@ -1,5 +1,6 @@
 super-diamond
 =============
+[super-diamond项目分析](https://donaldhan.github.io/super-diamond/2018/04/20/Super-Diamond%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8.html)
 
 - 配置管理系统提供系统参数配置管理，例如数据库的配置信息等，配置参数修改以后可以实时推送到客户端(基于netty4)，
 方便系统动态修改运行参数。

@@ -69,18 +69,26 @@ public class ConfigController extends BaseController {
 
 		String projCode = (String)projectService.queryProject(projectId).get("PROJ_CODE");
 		String moduleName = moduleService.findName(moduleId);
+		//推送最新项目配置给所有客户端
 		diamondServerHandler.pushConfig(projCode, type, moduleName);
 		if(selModuleId != null)
 			return "redirect:/profile/" + type + "/" + projectId + "?moduleId=" + selModuleId + "&flag=" + flag;
 		else
 			return "redirect:/profile/" + type + "/" + projectId + "?page=" + page + "&flag=" + flag;
 	}
-	
+
+	/**
+	 * @param type
+	 * @param projectId
+	 * @param moduleName
+	 * @param id
+	 * @return
+	 */
 	@RequestMapping("/config/delete/{id}")
 	public String deleteConfig(String type, Long projectId, String moduleName, @PathVariable Long id) {
 		configService.deleteConfig(id, projectId);
-		
 		String projCode = (String)projectService.queryProject(projectId).get("PROJ_CODE");
+		//推送最新项目配置给所有客户端
 		diamondServerHandler.pushConfig(projCode, type, moduleName);
 		return "redirect:/profile/" + type + "/" + projectId;
 	}

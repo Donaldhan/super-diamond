@@ -88,6 +88,9 @@ public class EventSource {
 		}
 	}
 
+	/**
+	 *
+	 */
 	private void initListeners() {
 		listeners = new CopyOnWriteArrayList<ConfigurationListener>();
 	}

@@ -50,7 +50,12 @@ public class DiamondServerHandler extends SimpleChannelInboundHandler<String> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
     	logger.info(ctx.channel().remoteAddress() + " 连接到服务器。");
     }
-    
+
+	/**
+	 * 处理客户端的请求
+	 * @param request
+	 * @throws Exception
+	 */
     @SuppressWarnings("unchecked")
 	@Override
     public void channelRead0(ChannelHandlerContext ctx, String request) throws Exception {
@@ -79,7 +84,7 @@ public class DiamondServerHandler extends SimpleChannelInboundHandler<String> {
         	addrs.add(clientInfo);
         	clients.put(key, addrs);
         	channels.put(clientAddr, ctx);
-        	
+        	//查询配置
         	if(StringUtils.isNotBlank(modules)) {
                 config = configService.queryConfigs(projCode, moduleArr, profile, "");
         	} else {
@@ -101,14 +106,17 @@ public class DiamondServerHandler extends SimpleChannelInboundHandler<String> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
     }
-    
+
+	/**
+	 * 客户端断开来连接时，移除客户端信息
+	 * @param ctx
+	 * @throws Exception
+	 */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     	super.channelInactive(ctx);
-    	
     	String address = ctx.channel().remoteAddress().toString();
     	channels.remove(address);
-    	
     	for(List<ClientInfo> infos : clients.values()) {
     		for(ClientInfo client : infos) {
     			if(address.equals(client.getAddress())) {
@@ -149,7 +157,12 @@ public class DiamondServerHandler extends SimpleChannelInboundHandler<String> {
     		}
     	}
     }
-    
+
+	/**
+	 * 发送项目配置信息给客户端
+	 * @param ctx
+	 * @param config
+	 */
     private void sendMessage(ChannelHandlerContext ctx, String config) {
     	byte[] bytes = config.getBytes(charset);
     	ByteBuf message = Unpooled.buffer(4 + bytes.length);

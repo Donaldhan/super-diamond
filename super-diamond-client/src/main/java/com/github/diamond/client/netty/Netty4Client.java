@@ -33,13 +33,11 @@ public class Netty4Client {
 	private int port;
 	private int timeout = 1000;
     private int connectTimeout = 3000;
-    
     private final EventLoopGroup group = new NioEventLoopGroup();
     private ClientChannelInitializer channelInitializer;
     private Bootstrap bootstrap;
     private volatile Channel channel;
     private volatile ChannelFuture future;  
-    
     private volatile  ScheduledFuture<?> reconnectExecutorFuture = null;
     private long lastConnectedTime = System.currentTimeMillis();
     private final AtomicInteger reconnect_count = new AtomicInteger(0);
@@ -62,6 +60,7 @@ public class Netty4Client {
                                         + " connect to the server " + host + ", cause: " + t.getMessage(), t);
         }
         try {
+		    //连接服务器
             connect();
                 
             logger.info("Start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() + " connect to the server " + host);
@@ -71,10 +70,10 @@ public class Netty4Client {
         }
     }
     
-    /*
+    /**
 	 * 使用时，循环调用该方法获取服务端返回的信息。
 	 * receiveMessage是阻塞方法，如果没有消息会等待。
-	 */
+	 **/
 	public String receiveMessage() {
 		return channelInitializer.getClientHandler().getMessage();
 	}
@@ -93,7 +92,11 @@ public class Netty4Client {
      	.channel(NioSocketChannel.class)
      	.handler(channelInitializer);
     }
-    
+
+    /**
+     * 完成实际连接
+     * @throws Throwable
+     */
     private void doConnect() throws Throwable {
         long start = System.currentTimeMillis();
         future = bootstrap.connect(getConnectAddress());
@@ -128,14 +131,18 @@ public class Netty4Client {
             }
         }
     }
-    
+
+    /**
+     * 连接服务器
+     * @throws Exception
+     */
     private void connect() throws Exception {
         try {
             if (isConnected()) {
                 return;
             }
             initConnectStatusCheckCommand();
-            doConnect();
+            doConnect();//完成实际连接
             if (! isConnected()) {
                 throw new Exception("Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                                             + NetUtils.getLocalHost() + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
@@ -185,9 +192,13 @@ public class Netty4Client {
             return false;
         return channel.isActive();
     }
-    
+
+    /**
+     *创建项目配置连接线程，当连接失败时调度项目连接服务器线程
+     */
     private synchronized void initConnectStatusCheckCommand(){
         if(reconnectExecutorFuture == null || reconnectExecutorFuture.isCancelled()){
+            //创建项目配置连接线程
             Runnable connectStatusCheckCommand =  new Runnable() {
                 public void run() {
                     try {
@@ -211,6 +222,7 @@ public class Netty4Client {
                     }
                 }
             };
+            //当连接失败时调度项目连接服务器线程
             reconnectExecutorFuture = reconnectExecutorService.scheduleWithFixedDelay(connectStatusCheckCommand, 2 * 1000, 2 * 1000, TimeUnit.MILLISECONDS);
         }
     }
