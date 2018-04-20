@@ -10,3 +10,9 @@
 /super-diamond-server/target
 
 /super-diamond-client/.springBeans
+
+#ignore idea project file
+
+/.idea
+*.iml
+
