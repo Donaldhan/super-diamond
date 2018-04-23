@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import com.github.diamond.client.event.ConfigurationListener;
 
 /**
+ * 属性配置器工厂bean
  * Create on @2013-8-26 @上午9:29:52 
  * @author bsli@ustcinfo.com
  */
