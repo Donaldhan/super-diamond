@@ -67,7 +67,15 @@ public class ConfigService {
 		} else
 			return viewConfig(configs, type);
 	}
-	
+
+	/**
+	 * 客户端轮询，查询项目配置信息
+	 * @param projectCode
+	 * @param modules
+	 * @param type  profile
+	 * @param format json,php
+	 * @return
+	 */
 	public String queryConfigs(String projectCode, String[] modules, String type, String format) {
 		String sql = "SELECT * FROM conf_project_config a, conf_project_module b, conf_project c " +
 				"WHERE a.MODULE_ID = b.MODULE_ID AND a.PROJECT_ID=c.id AND a.DELETE_FLAG =0 AND c.PROJ_CODE=? "
