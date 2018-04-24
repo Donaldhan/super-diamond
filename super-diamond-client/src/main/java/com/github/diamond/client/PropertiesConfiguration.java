@@ -50,9 +50,28 @@ public class PropertiesConfiguration extends EventSource {
 	private static String _profile;
 	private static String _modules;
 	private static final long FIRST_CONNECT_TIMEOUT = 2;
+	private String secKey;
+	private boolean supportLocal;
+
+	public String getSecKey() {
+		return secKey;
+	}
+
+	public void setSecKey(String secKey) {
+		this.secKey = secKey;
+	}
+
+	public boolean isSupportLocal() {
+		return supportLocal;
+	}
+
+	public void setSupportLocal(boolean supportLocal) {
+		this.supportLocal = supportLocal;
+	}
 
 	/**
 	 * 从jvm参数中获取 projCode、profile、host和port值
+
 	 * 
 	 * @param projCode
 	 * @param profile
